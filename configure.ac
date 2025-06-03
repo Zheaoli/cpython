@@ -8032,6 +8032,7 @@ then
   AX_CHECK_COMPILE_FLAG([-march=armv8-a+simd],[
     [LIBHACL_SIMD128_FLAGS="-march=armv8-a+sim"]
 
+    [LIBHACL_BLAKE2_SIMD128_OBJS="Modules/_hacl/Hacl_Hash_Blake2s_Simd128.o"]
     AC_DEFINE([HACL_CAN_COMPILE_SIMD128], [1], [HACL* library can compile SIMD128 implementations])
   ], [], [-Werror])
 
