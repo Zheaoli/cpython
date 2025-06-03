@@ -32640,7 +32640,7 @@ printf "%s\n" "$ax_cv_check_cflags__Werror__march_armv8_apsimd" >&6; }
 if test "x$ax_cv_check_cflags__Werror__march_armv8_apsimd" = xyes
 then :
 
-    LIBHACL_SIMD128_FLAGS="-march=armv8-a+sim"
+    LIBHACL_SIMD128_FLAGS="-march=armv8-a+simd"
 
     LIBHACL_BLAKE2_SIMD128_OBJS="Modules/_hacl/Hacl_Hash_Blake2s_Simd128.o"
 
