@@ -8022,37 +8022,19 @@ else
   use_hacl_universal2_impl=no
 fi
 
-dnl ARM platform detection
-dnl Define function to detect ARM platform
-detect_arm() {
-  case "$build_cpu" in
-    arm*|aarch64*|armv*)
-      return 0
-      ;;
-    *)
-      return 1
-      ;;
-  esac
-}
-
-dnl ARM platform configuration
-if detect_arm; then
-  if test "$build_cpu" = "aarch64"; then
-    AC_DEFINE([HACL_CAN_COMPILE_SIMD128], [1], [HACL* library can compile SIMD128 implementations])
-    LIBHACL_ARM_FLAGS="-march=armv8-a+simd"
-  else
-    LIBHACL_ARM_FLAGS=""
-  fi
-else
-  LIBHACL_ARM_FLAGS=""
-fi
-
 # The SIMD files use aligned_alloc, which is not available on older versions of
 # Android.
 # The *mmintrin.h headers are x86-family-specific, so can't be used on WASI.
 if test "$ac_sys_system" != "Linux-android" -a "$ac_sys_system" != "WASI" || \
    { test -n "$ANDROID_API_LEVEL" && test "$ANDROID_API_LEVEL" -ge 28; }
 then
+  dnl Check for ARM SIMD support
+  AX_CHECK_COMPILE_FLAG([-march=armv8-a+simd],[
+    [LIBHACL_SIMD128_FLAGS="-march=armv8-a+sim"]
+
+    AC_DEFINE([HACL_CAN_COMPILE_SIMD128], [1], [HACL* library can compile SIMD128 implementations])
+  ], [], [-Werror])
+
   dnl This can be extended here to detect e.g. Power8, which HACL* should also support.
   AX_CHECK_COMPILE_FLAG([-msse -msse2 -msse3 -msse4.1 -msse4.2],[
     [LIBHACL_SIMD128_FLAGS="-msse -msse2 -msse3 -msse4.1 -msse4.2"]
@@ -8077,7 +8059,6 @@ fi
 dnl Substitute variables for Makefile
 AC_SUBST([LIBHACL_SIMD128_FLAGS])
 AC_SUBST([LIBHACL_BLAKE2_SIMD128_OBJS])
-AC_SUBST([LIBHACL_ARM_FLAGS])
 
 # The SIMD files use aligned_alloc, which is not available on older versions of
 # Android.
