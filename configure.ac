@@ -8022,6 +8022,31 @@ else
   use_hacl_universal2_impl=no
 fi
 
+dnl ARM platform detection
+dnl Define function to detect ARM platform
+detect_arm() {
+  case "$build_cpu" in
+    arm*|aarch64*|armv*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+dnl ARM platform configuration
+if detect_arm; then
+  if test "$build_cpu" = "aarch64"; then
+    AC_DEFINE([HACL_CAN_COMPILE_SIMD128], [1], [HACL* library can compile SIMD128 implementations])
+    LIBHACL_ARM_FLAGS="-march=armv8-a+simd"
+  else
+    LIBHACL_ARM_FLAGS=""
+  fi
+else
+  LIBHACL_ARM_FLAGS=""
+fi
+
 # The SIMD files use aligned_alloc, which is not available on older versions of
 # Android.
 # The *mmintrin.h headers are x86-family-specific, so can't be used on WASI.
@@ -8048,8 +8073,11 @@ then
 
   ], [], [-Werror])
 fi
+
+dnl Substitute variables for Makefile
 AC_SUBST([LIBHACL_SIMD128_FLAGS])
 AC_SUBST([LIBHACL_BLAKE2_SIMD128_OBJS])
+AC_SUBST([LIBHACL_ARM_FLAGS])
 
 # The SIMD files use aligned_alloc, which is not available on older versions of
 # Android.

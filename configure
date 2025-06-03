@@ -721,6 +721,7 @@ MODULE__MD5_TRUE
 LIBHACL_LDEPS_LIBTYPE
 LIBHACL_BLAKE2_SIMD256_OBJS
 LIBHACL_SIMD256_FLAGS
+LIBHACL_ARM_FLAGS
 LIBHACL_BLAKE2_SIMD128_OBJS
 LIBHACL_SIMD128_FLAGS
 LIBHACL_LDFLAGS
@@ -32598,6 +32599,30 @@ else
   use_hacl_universal2_impl=no
 fi
 
+detect_arm() {
+  case "$build_cpu" in
+    arm*|aarch64*|armv*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+if detect_arm; then
+  if test "$build_cpu" = "aarch64"; then
+
+printf "%s\n" "#define HACL_CAN_COMPILE_SIMD128 1" >>confdefs.h
+
+    LIBHACL_ARM_FLAGS="-march=armv8-a+simd"
+  else
+    LIBHACL_ARM_FLAGS=""
+  fi
+else
+  LIBHACL_ARM_FLAGS=""
+fi
+
 # The SIMD files use aligned_alloc, which is not available on older versions of
 # Android.
 # The *mmintrin.h headers are x86-family-specific, so can't be used on WASI.
@@ -32668,6 +32693,8 @@ esac
 fi
 
 fi
+
+
 
 
 
