@@ -28,6 +28,38 @@ def get_dict_key(container: dict[str, Any], key: str) -> dict[str, Any]:
         container = container[part]
     return container
 
+def get_abi_flags():
+    ext_suffix = sysconfig.get_config_var('EXT_SUFFIX')
+    if ext_suffix:
+        import re
+        match = re.search(r'\.cpython-\d+([a-z]*)-', ext_suffix)
+        if match:
+            return list(match.group(1))
+
+    soabi = sysconfig.get_config_var('SOABI')
+    if soabi:
+        match = re.search(r'cpython-\d+([a-z]*)', soabi)
+        if match:
+            return list(match.group(1))
+
+    return []
+
+def get_extension_suffixes():
+    suffixes = []
+
+    ext_suffix = sysconfig.get_config_var('EXT_SUFFIX')
+    if ext_suffix:
+        suffixes.append(ext_suffix)
+
+    soabi = sysconfig.get_config_var('SOABI')
+    if soabi:
+        base_suffix = ext_suffix.replace(soabi, soabi.rstrip('d'))
+        if base_suffix != ext_suffix:
+            suffixes.append(base_suffix)
+
+    suffixes.extend(['.abi3.so', '.so'])
+
+    return suffixes
 
 def generate_data(schema_version: str) -> collections.defaultdict[str, Any]:
     """Generate the build-details.json data (PEP 739).
@@ -61,13 +93,13 @@ def generate_data(schema_version: str) -> collections.defaultdict[str, Any]:
     if '_multiarch' in data['implementation']:
         data['implementation']['_multiarch'] = sysconfig.get_config_var('MULTIARCH')
 
-    data['abi']['flags'] = list(sys.abiflags)
+    data['abi']['flags'] = get_abi_flags()
 
     data['suffixes']['source'] = importlib.machinery.SOURCE_SUFFIXES
     data['suffixes']['bytecode'] = importlib.machinery.BYTECODE_SUFFIXES
     #data['suffixes']['optimized_bytecode'] = importlib.machinery.OPTIMIZED_BYTECODE_SUFFIXES
     #data['suffixes']['debug_bytecode'] = importlib.machinery.DEBUG_BYTECODE_SUFFIXES
-    data['suffixes']['extensions'] = importlib.machinery.EXTENSION_SUFFIXES
+    data['suffixes']['extensions'] = get_extension_suffixes()
 
     LIBDIR = sysconfig.get_config_var('LIBDIR')
     LDLIBRARY = sysconfig.get_config_var('LDLIBRARY')
